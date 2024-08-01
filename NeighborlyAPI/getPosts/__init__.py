@@ -1,4 +1,5 @@
 import logging
+import os
 import azure.functions as func
 import pymongo
 import json
@@ -10,9 +11,9 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
     logging.info('Python getPosts trigger function processed a request.')
 
     try:
-        url = "localhost"  # TODO: Update with appropriate MongoDB connection information
+        url = os.environ["dbConnectionFinal"]
         client = pymongo.MongoClient(url)
-        database = client['azure']
+        database = client['finalcosmosdblab2']
         collection = database['posts']
 
         result = collection.find({})

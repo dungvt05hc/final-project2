@@ -1,3 +1,4 @@
+import os
 import azure.functions as func
 import pymongo
 import json
@@ -10,16 +11,28 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
 
     if id:
         try:
-            url = "localhost"  # TODO: Update with appropriate MongoDB connection information
+            url = os.environ["dbConnectionFinal"]
             client = pymongo.MongoClient(url)
-            database = client['azure']
+            database = client['finalcosmosdblab2']
             collection = database['posts']
-
-            query = {'_id': ObjectId(id)}
+            
+            query = {'_id': id}
             result = collection.find_one(query)
-            result = dumps(result)
 
-            return func.HttpResponse(result, mimetype="application/json", charset='utf-8')
+            if not result:
+                try:
+                    obj_id = ObjectId(id)
+                    query = {'_id': obj_id}
+                    result = collection.find_one(query)
+                except Exception as e:
+                    return func.HttpResponse("Invalid ID format.", status_code=400)
+
+            if result:
+                print(query)
+                print("----------result--------")
+                result = dumps(result)
+                print(result)
+                return func.HttpResponse(result, mimetype="application/json", charset='utf-8')
         except:
             return func.HttpResponse("Database connection error.", status_code=500)
 
